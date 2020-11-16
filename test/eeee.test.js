@@ -8,7 +8,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         this.eeee = await dolphinsWTF.new({ from: alice });
     });
 
-        /*
+    
     it('should have correct name, symbol, decimal and totalsupply', async () => {
         const name = await this.eeee.name();
         const symbol = await this.eeee.symbol();
@@ -249,6 +249,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
     });
 
+    /*
     it('only Flipper can change the cooldown rates', async () => {
 
         // this test requires commenting out the requirement for the game to be started.
@@ -308,10 +309,92 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
     });
 
+    it('only Flipper can change the River threshold levels', async () => {
+
+        // this test requires commenting out the requirement for the game to be started.
+        await this.eeee.transfer(bob, "1000", { from: alice });
+        await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
+
+        const checkSnatched = await this.eeee.checkSnatchBalance();
+
+        assert.equal(checkSnatched.valueOf().toString(), '0');
+
+        await expectRevert (
+            this.eeee.updateRiver(web3.utils.toBN('5000000000000000000000'), { from: bob }),
+            "You're not flipper",
+        );
+
+        await expectRevert (
+            this.eeee.updateRiver(web3.utils.toBN('2207000000000000000000'), { from: frank }),
+            "Maximum threshold for River Dolphins is 2103.45 EEEE",
+        );
+
+        await this.eeee.updateRiver(web3.utils.toBN('420690000000000100000'), { from: frank });
+
+        const reCheckSnatched = await this.eeee.checkSnatchBalance();
+
+        assert.equal(reCheckSnatched.valueOf().toString(), '95000');
+
+    });
+
+    it('only Flipper can change the Bottlenose threshold levels', async () => {
+
+        // this test requires commenting out the requirement for the game to be started.
+        await this.eeee.transfer(bob, "1000", { from: alice });
+        await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
+
+        const checkSnatched = await this.eeee.checkSnatchBalance();
+
+        assert.equal(checkSnatched.valueOf().toString(), '0');
+
+        await expectRevert (
+            this.eeee.updateBottlenose(web3.utils.toBN('5000000000000000000000'), { from: bob }),
+            "You're not flipper",
+        );
+
+        await expectRevert (
+            this.eeee.updateBottlenose(web3.utils.toBN('4207000000000000000000'), { from: frank }),
+            "Maximum threshold for River Dolphins is 4206.9 EEEE",
+        );
+
+        await this.eeee.updateBottlenose(web3.utils.toBN('420690000000000100000'), { from: frank });
+
+        const reCheckSnatched = await this.eeee.checkSnatchBalance();
+
+        assert.equal(reCheckSnatched.valueOf().toString(), '1598621999999999905000');
+
+    });
+
+    it('only Peter can activate anarchy', async () => {
+
+        // this test requires commenting out the requirement for the game to be started.
+        await this.eeee.transfer(bob, "1000", { from: alice });
+
+        await this.eeee.fundDev(web3.utils.toBN('7000000000000000000'), { from: alice });
+
+        const checkSnatched = await this.eeee.checkSnatchBalance();
+        assert.equal(checkSnatched.valueOf().toString(), '0');
+        const checkDevFund = await this.eeee.checkDevBalance();
+        assert.equal(checkDevFund.valueOf().toString(), '7000000000000000000');
+
+        await expectRevert (
+            this.eeee.activateAnarchy({ from: bob }),
+            "You're not peter the dolphin",
+        );
+
+        await this.eeee.activateAnarchy({ from: alice });
+
+        const reCheckDevFund = await this.eeee.checkDevBalance();
+        assert.equal(reCheckDevFund.valueOf().toString(), '0');
+
+        await expectRevert (
+            this.eeee.feedDev({ from: alice }),
+            "You're not the dev, get out of here",
+        );
+
+    });
 
 
-    //updateRiver
-    //updateBottlenose
     //activateAnarchy
     //changeFunctionFees
 

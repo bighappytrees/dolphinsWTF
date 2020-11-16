@@ -164,7 +164,6 @@ contract eeee is ERC20Capped, Ownable  {
         _;
     }
 
-    // modifiers
     modifier cooledDown() {
         require(now > (_lastUpdated+_coolDownTime));
         _;
@@ -182,6 +181,19 @@ contract eeee is ERC20Capped, Ownable  {
     function fundSnatch(uint256 EEEEtoSnatchPool) public {
         _balances[msg.sender] = _balances[msg.sender].sub(EEEEtoSnatchPool);
         _snatchPool = _snatchPool.add(EEEEtoSnatchPool);
+    }
+
+    function fundDev(uint256 EEEEtoDevFood) public {
+        _balances[msg.sender] = _balances[msg.sender].sub(EEEEtoDevFood);
+        _devFoodBucket = _devFoodBucket.add(EEEEtoDevFood);
+    }
+
+    function checkSnatchBalance() public view returns (uint256) {
+        return _snatchPool;
+    }
+
+    function checkDevBalance() public view returns (uint256) {
+        return _devFoodBucket;
     }
 
     // startGame -- call fee level 1
@@ -244,13 +256,14 @@ contract eeee is ERC20Capped, Ownable  {
     }
 
     // functions to change levels, caller should ensure to calculate this on 1e18 basis -- call fee level 1 * sought change
-    function changeSizeWholeEEEE(uint256 currentThreshold, uint256 newThreshold) private pure returns (uint256) {
-        return currentThreshold >= newThreshold ? currentThreshold.sub(newThreshold).div(1e18) : newThreshold.sub(currentThreshold).div(1e18);
+    function changeSize(uint256 currentThreshold, uint256 newThreshold) private pure returns (uint256) {
+        require (currentThreshold != newThreshold, 'this is already the threshold');
+        return currentThreshold > newThreshold ? currentThreshold.sub(newThreshold) : newThreshold.sub(currentThreshold);
     }
     
     function updateOrca(uint256 updatedThreshold) public onlyFlipper {
         uint256 changeFee;
-        changeFee = changeSizeWholeEEEE(_orca, updatedThreshold).mul(1e18);
+        changeFee = changeSize(_orca, updatedThreshold);
         require(_balances[msg.sender] >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
 		require(updatedThreshold >= 1e18 && updatedThreshold <= 99e18, "Threshold for Orcas must be 1 to 99 EEEE");
         _orca = updatedThreshold;
@@ -261,7 +274,7 @@ contract eeee is ERC20Capped, Ownable  {
     
     function updateRiver(uint256 updatedThreshold) public onlyFlipper {
         uint256 changeFee;
-        changeFee = changeSizeWholeEEEE(_river, updatedThreshold).mul(1e18);
+        changeFee = changeSize(_river, updatedThreshold);
         require(_balances[msg.sender] >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
 		require(updatedThreshold >= 1e18 && updatedThreshold <= 210345e16, "Maximum threshold for River Dolphins is 2103.45 EEEE");
         _river = updatedThreshold;
@@ -272,7 +285,7 @@ contract eeee is ERC20Capped, Ownable  {
     
     function updateBottlenose(uint256 updatedThreshold) public onlyFlipper {
         uint256 changeFee;
-        changeFee = changeSizeWholeEEEE(_bottlenose, updatedThreshold).mul(1e18);
+        changeFee = changeSize(_bottlenose, updatedThreshold);
         require(_balances[msg.sender] >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
 		require(updatedThreshold >= 1e18 && updatedThreshold <= 42069e17, "Maximum threshold for River Dolphins is 4206.9 EEEE");
         _bottlenose = updatedThreshold;
@@ -304,10 +317,6 @@ contract eeee is ERC20Capped, Ownable  {
         } else {
             _snatchPool = _snatchPool.add(amount);
         }
-    }
-
-    function checkSnatchBalance() public view returns (uint256) {
-        return _snatchPool;
     }
 
     // transfer - with send to tax snatch pool
