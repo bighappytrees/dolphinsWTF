@@ -1,24 +1,18 @@
-// SPDX-License-Identifier: MIT
+//SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.2.0/contracts/token/ERC20/ERC20.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.2.0/contracts/token/ERC20/IERC20.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.2.0/contracts/GSN/Context.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.2.0/contracts/utils/Address.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.2.0/contracts/math/SafeMath.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.2.0/contracts/math/Math.sol";
-
-/*
-        _decimals = 18;
-        _totalSupply = 42069e18;
-        _balances[msg.sender] = _totalSupply;
-    When the game is on each transaction is taxed, with the money being sent to an address. This can be "snatch" by any dolphin holding at least 69 tokens.
-
-*/
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Capped.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/GSN/Context.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/Math.sol";
 
 
-// DolphinToken, hardcap set on deployment with minting to crunch base
-contract DolphinToken is ERC20 {
+// eeee, hardcap set on deployment with minting to crunch base
+contract eeee is ERC20Capped, Ownable  {
     using SafeMath for uint256;
 
     bool public _gameStarted;
@@ -39,18 +33,16 @@ contract DolphinToken is ERC20 {
 	uint256 public _lpMin;
 	uint256 public _feeLevel1;
 	uint256 public _feeLevel2;
-	
+    
     
     mapping(address => uint256) private _balances;
 
-
     constructor() public
-        ERC20("Dolphin Token", "EEEE")
+        ERC20("dolphins.wtf", "EEEE")
+        ERC20Capped(42069e18)
     {
-        _mint(msg.sender, 42069e18);
-        _balances[msg.sender] = 42069e18;
         _gameStarted = false;
-        _coolDownTime = 1 minutes; //set this back
+        _coolDownTime = 60; //set this back
         _devCanEat = false;
         _isAnarchy = false;
         _snatchRate = 1;
@@ -64,52 +56,107 @@ contract DolphinToken is ERC20 {
 		_feeLevel1 = 1e18;
 		_feeLevel2 = 5e18;
 		_owner = msg.sender;
+        mint(msg.sender, 42069e18);
+        _balances[msg.sender] = 42069e18;
     }
 
     // levels: checks caller's balance to determine if they can access a function
 
-    function _uniLPBalance() internal view returns (uint256) {
-		IERC20 _LPToken;
-		_LPToken = IERC20(_UniLP);
-		return _LPToken.balanceOf(msg.sender);
+    function uniLPBalance() public view returns (uint256) {
+		IERC20 lpToken = IERC20(_UniLP);
+        return lpToken.balanceOf(msg.sender);
 	}
 	
+    function amILP() public view returns(bool) {
+        require(_UniLP != address(0), "Eeee! The LP contract has not been set");
+        bool lpOrca = uniLPBalance() > _lpMin ? true : false;
+        return lpOrca;
+    } 
+
+    function amIOrca() public view returns(bool) {
+        bool orca = _balances[msg.sender] >= _orca ? true : false;
+        if (orca) {
+            return orca;
+        } else {
+            orca = amILP() ? true : false;
+            return orca;
+        }
+    } 
+
     //  Orcas (are you even a dolphin?) - 69 (0.00164%); Can: Snatch tax base
     modifier onlyOrcas() {
-        require(_balances[msg.sender] >= _orca, "Eeee! You're not even an orca");
+        require(amIOrca(), "Eeee! You're not even an orca");
         _;
     }
-    
-    modifier onlyLPs() {
-        require(_UniLP != address(0), "Eeee! The LP contract has not been set");
-		require(_uniLPBalance() > _lpMin, "Eeee! You're not even an LP orca");
-		_;
-    }
+
+    function amIRiver() public view returns(bool) {
+        bool river = _balances[msg.sender] >= _river ? true : false;
+        return river;
+    } 
 
     // River Dolphin (what is wrong with your nose?) - 420.69 (1%); Can: turn game on/off
     modifier onlyRiver() {
-        require(_balances[msg.sender] >= _river, "You're not even a river dolphin");
+        require(amIRiver(), "You're not even a river dolphin");
         _;
     }
+
+    function amIBottlenose() public view returns(bool) {
+        bool bottlenose = _balances[msg.sender] >= _bottlenose ? true : false;
+        return bottlenose;
+    } 
 
     // Bottlenose Dolphin  (now that's a dolphin) - 2103.45 (5%); Can: Change tax rate (up to 2.5%); Devs can eat (allows dev to withdraw from the dev food bucket)
     modifier onlyBottlenose() {
-        require(_balances[msg.sender] >= _bottlenose, "You're not even a bottlenose dolphin");
+        require(amIBottlenose(), "You're not even a bottlenose dolphin");
         _;
     }
+
+    function amIFlipper() public view returns(bool) {
+        bool flipper = _balances[msg.sender] >= _flipper ? true : false;
+        return flipper;
+    } 
 
     // Flipper (A based dolphin) - 4206.9 (10%); Can: Change levels thresholds (except Flipper and Peter); Change tax rate (up to 10%); Change cooldown time
     modifier onlyFlipper() {
-        require(_balances[msg.sender] >= _flipper, "You're not flipper");
+        require(amIFlipper(), "You're not flipper");
         _;
     }
 
+    function amIPeter() public view returns(bool) {
+        bool peter = _balances[msg.sender] >= _peter ? true : false;
+        return peter;
+    } 
+
     // Peter the Dolphin (ask Margaret Howe Lovatt) - 21034.5 (50%); Can: Burn the key and hand the world over to the dolphins, and stops feeding the devs
     modifier onlyPeter() {
-        require(_balances[msg.sender] >= _peter, "You're not peter the dolphin");
+        require(amIPeter(), "You're not peter the dolphin");
         _;
     }
-	
+
+    function dolphinhoodLevel() public view returns(string memory) {
+        if (amIPeter()) {
+            return "Peter";
+        }
+        if (amIFlipper()) {
+            return "Flipper";
+        }
+        if (amIBottlenose()) {
+            return "Bottlenose";
+        }
+        if (amIRiver()) {
+            return "River";
+        }
+        if (amIOrca()) {
+            return "Orca";
+        }
+        if (amILP()) {
+            return "Orca";
+        } else {
+            return "notDolphin";
+        }
+
+    }
+
 	
     // Are you the dev?
     modifier onlyDev() {
@@ -119,7 +166,7 @@ contract DolphinToken is ERC20 {
 
     // modifiers
     modifier cooledDown() {
-        //require(now > (_lastUpdated+_coolDownTime));
+        require(now > (_lastUpdated+_coolDownTime));
         _;
     }
 
@@ -132,20 +179,9 @@ contract DolphinToken is ERC20 {
         _snatchPool = 0;
     }
     
-    function snatchFoodLP() public onlyLPs cooledDown {
-        require(_snatchPool >= 1 * 1e16, "snatchpool: min snatch amount (0.01 EEEE) not reached.");
-		_balances[msg.sender] = _balances[msg.sender].add(_snatchPool);
-        _snatchPool = 0;
-    }
-    
     function fundSnatch(uint256 EEEEtoSnatchPool) public {
         _balances[msg.sender] = _balances[msg.sender].sub(EEEEtoSnatchPool);
         _snatchPool = _snatchPool.add(EEEEtoSnatchPool);
-    }
-    
-    function checkSnatching(uint256 EEEEtoSnatchPool) public {
-        _balances[msg.sender] = _balances[msg.sender].sub(EEEEtoSnatchPool);
-        _snatch(EEEEtoSnatchPool);
     }
 
     // startGame -- call fee level 1
@@ -166,6 +202,10 @@ contract DolphinToken is ERC20 {
         _lastUpdated = now;
     }
 
+    function readGameStatus() public view returns (bool) {
+        return _gameStarted;
+    }
+
     // allowDevToEat - can only be turned on once  -- call fee level 1
     function allowDevToEat() public onlyBottlenose {
         require(!_devCanEat, "Eeee! Too late sucker, dev's eating tonight");
@@ -177,7 +217,7 @@ contract DolphinToken is ERC20 {
 
     // changeSnatchRate - with max of 3% if Bottlenose; with max of 10% if Flipper -- call fee level 2
     function changeSnatchRate(uint256 newSnatchRate) public onlyBottlenose cooledDown {
-        require(newSnatchRate >= 1 && newSnatchRate <= 3, "Eeee! Minimum snatchRate is 1%, maximum is 3% for Bottlenose dolphins or maximum 10% for Flipper");
+        require(newSnatchRate >= 1 && newSnatchRate <= 3, "Eeee! Minimum snatchRate is 1%, maximum is 3%. Flipper can use the changeSnatchRateHigh function.");
         _balances[msg.sender] = _balances[msg.sender].sub(_feeLevel2);
 		_snatch(_feeLevel2);
 		_snatchRate = newSnatchRate;
@@ -186,7 +226,7 @@ contract DolphinToken is ERC20 {
     
     // changeSnatchRate - with max of 10% if Flipper -- call fee level 2
     function changeSnatchRateHigh(uint256 newSnatchRate) public onlyFlipper cooledDown {
-        require(newSnatchRate >= 1 && newSnatchRate <= 10, "Eeee! Minimum snatchRate is 1%, maximum is 3% for Bottlenose dolphins or maximum 10% for Flipper");
+        require(newSnatchRate >= 1 && newSnatchRate <= 10, "Eeee! Minimum snatchRate is 1%, maximum 10% for Flipper");
         _balances[msg.sender] = _balances[msg.sender].sub(_feeLevel2);
 		_snatch(_feeLevel2);
 		_snatchRate = newSnatchRate;
@@ -195,7 +235,7 @@ contract DolphinToken is ERC20 {
 
     // changeCoolDownTime - make the game go faster or slower, cooldown to be set in hours (min 1; max 24) -- call fee level 2
     function updateCoolDown(uint256 newCoolDown) public onlyFlipper cooledDown {
-        require(_gameStarted, "Eeee! You need to wait for the game to cooldown first");
+        //require(_gameStarted, "Eeee! You need to wait for the game to start first");
         require(newCoolDown <= 24 && newCoolDown >= 1, "Eeee! Minimum cooldown is 1 hour, maximum is 24 hours");
         _balances[msg.sender] = _balances[msg.sender].sub(_feeLevel2);
 		_snatch(_feeLevel2);
@@ -265,9 +305,15 @@ contract DolphinToken is ERC20 {
             _snatchPool = _snatchPool.add(amount);
         }
     }
-    
+
+    function checkSnatchBalance() public view returns (uint256) {
+        return _snatchPool;
+    }
+
     // transfer - with send to tax snatch pool
     function _transfer(address sender, address recipient, uint256 amount) internal override {
+        super._transfer(sender, recipient, amount);
+
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
  
@@ -276,10 +322,10 @@ contract DolphinToken is ERC20 {
         uint256 creditAmount;
         if (_gameStarted) {
             // calculate the taxed amount to be transfered if the game is active
-            uint256 snatch_amount;
-            snatch_amount = amount.mul(_snatchRate).div(100);
-            _snatch(snatch_amount);
-            creditAmount = amount.sub(snatch_amount);
+            uint256 snatchamount;
+            snatchamount = amount.mul(_snatchRate).div(100);
+            _snatch(snatchamount);
+            creditAmount = amount.sub(snatchamount);
         } else {
             creditAmount = amount;
         }
@@ -306,4 +352,8 @@ contract DolphinToken is ERC20 {
 		_UniLP = addrUniV2LP;
 		_lpMin = lpMin;
 	}
+
+    function mint(address _to, uint256 amount) public onlyDev {
+        _mint(_to, amount);
+    }
 }
