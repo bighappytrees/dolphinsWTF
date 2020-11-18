@@ -34,7 +34,6 @@ contract eeee is ERC20Capped, Ownable  {
 	uint256 public _feeLevel1;
 	uint256 public _feeLevel2;
     
-    
     mapping(address => uint256) private _balances;
 
     constructor() public
@@ -42,7 +41,7 @@ contract eeee is ERC20Capped, Ownable  {
         ERC20Capped(42069e18)
     {
         _gameStarted = false;
-        _coolDownTime = 60; //set this back
+        _coolDownTime = 3600;
         _devCanEat = false;
         _isAnarchy = false;
         _snatchRate = 1;
@@ -157,7 +156,6 @@ contract eeee is ERC20Capped, Ownable  {
 
     }
 
-	
     // Are you the dev?
     modifier onlyDev() {
         require(address(msg.sender) == _owner, "You're not the dev, get out of here");
@@ -168,8 +166,6 @@ contract eeee is ERC20Capped, Ownable  {
         require(now > (_lastUpdated+_coolDownTime));
         _;
     }
-
-    // functions:
     
     // snatch - grab from snatch pool, requires min 0.01 EEEE in snatchpool -- always free
     function snatchFood() public onlyOrcas cooledDown {
@@ -181,6 +177,10 @@ contract eeee is ERC20Capped, Ownable  {
     function fundSnatch(uint256 EEEEtoSnatchPool) public {
         _balances[msg.sender] = _balances[msg.sender].sub(EEEEtoSnatchPool);
         _snatchPool = _snatchPool.add(EEEEtoSnatchPool);
+        if (address(msg.sender) != _owner) {
+            _lastUpdated = now;
+        }
+        
     }
 
     function fundDev(uint256 EEEEtoDevFood) public {
