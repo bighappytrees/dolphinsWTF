@@ -1,3 +1,4 @@
+/*
 const { expectRevert } = require('@openzeppelin/test-helpers');
 const dolphinsWTF = artifacts.require('eeee');
 
@@ -249,7 +250,6 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
     });
 
-    /*
     it('only Flipper can change the cooldown rates', async () => {
 
         // this test requires commenting out the requirement for the game to be started.
@@ -279,7 +279,6 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.updateCoolDown(9, { from: frank });
 
     });
-    */
 
     it('only Flipper can change the Orca threshold levels', async () => {
 
@@ -400,3 +399,5 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
 
   });
+
+  */

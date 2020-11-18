@@ -10,8 +10,26 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 
+//////////////////////////////////////////////////////////////////////
+//                                       __                         //
+//                                   _.-~  )    ____ eeee ____      //
+//                        _..--~~~~,'   ,-/     _                   //
+//                     .-'. . . .'   ,-','    ,' )                  //
+//                   ,'. . . _   ,--~,-'__..-'  ,'                  //
+//                 ,'. . .  (@)' ---~~~~      ,'                    //
+//                /. . . . '~~             ,-'                      //
+//               /. . . . .             ,-'                         //
+//              ; . . . .  - .        ,'                            //
+//             : . . . .       _     /                              //
+//            . . . . .          `-.:                               //
+//           . . . ./  - .          )                               //
+//          .  . . |  _____..---.._/ ____ dolphins.wtf ____         //
+//~---~~~~-~~---~~~~----~~~~-~~~~-~~---~~~~----~~~~~~---~~~~-~~---~~//
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
 
-// eeee, hardcap set on deployment with minting to crunch base
+
+// eeee, hardcap set on deployment with minting to dev for subsequent deployment into DolphinPods (2x) & snatchFeeder
 contract eeee is ERC20Capped, Ownable  {
     using SafeMath for uint256;
 

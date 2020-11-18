@@ -1,6 +1,7 @@
-/*
+
 // to update, taken from MasterChef
 
+/*
 
 
 const { expectRevert, time } = require('@openzeppelin/test-helpers');
@@ -195,24 +196,7 @@ contract('DolphinPod', ([alice, bob, carol, dev, minter]) => {
             assert.equal((await this.pod.pendingSushi(1, bob)).valueOf(), '3333');
         });
 
-        it('should stop giving bonus SUSHIs after the bonus period ends', async () => {
-            // 100 per block farming rate starting at block 500 with bonus until block 600
-            this.pod = await DolphinPod.new(this.eeee.address, dev, '100', '500', '600', { from: alice });
-            await this.eeee.transferOwnership(this.pod.address, { from: alice });
-            await this.lp.approve(this.pod.address, '1000', { from: alice });
-            await this.pod.add('1', this.lp.address, true);
-            // Alice deposits 10 LPs at block 590
-            await time.advanceBlockTo('589');
-            await this.pod.deposit(0, '10', { from: alice });
-            // At block 605, she should have 1000*10 + 100*5 = 10500 pending.
-            await time.advanceBlockTo('605');
-            assert.equal((await this.pod.pendingSushi(0, alice)).valueOf(), '10500');
-            // At block 606, Alice withdraws all pending rewards and should get 10600.
-            await this.pod.deposit(0, '0', { from: alice });
-            assert.equal((await this.pod.pendingSushi(0, alice)).valueOf(), '0');
-            assert.equal((await this.eeee.balanceOf(alice)).valueOf(), '10600');
-        });
-    });
+
 });
 
 */

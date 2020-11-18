@@ -12,10 +12,28 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./eeee.sol";
 
 // snatchFeeder is one of the elements of dolphins.wtf.
-// It can be funded (e.g. by her majesty the Cetacean Queen's devs)
+// It can be funded, started and stopped (e.g. by her majesty the Cetacean Queen's devs)
 // A call to the snatchFeeder can be made *by anyone* to send eeee to the snatchpool
 // Once received by the snatchPool, no one can feed from the snatchPool during the cooldown period (1 hour)
 // Calls to the snatchFeeder can only be made once per hour.
+//
+//////////////////////////////////////////////////////////////////////
+//                                       __                         //
+//                                   _.-~  ) ___ snatchFeeder ____  //
+//                        _..--~~~~,'   ,-/     _                   //
+//                     .-'. . . .'   ,-','    ,' )                  //
+//                   ,'. . . _   ,--~,-'__..-'  ,'                  //
+//                 ,'. . .  (@)' ---~~~~      ,'                    //
+//                /. . . . '~~             ,-'                      //
+//               /. . . . .             ,-'                         //
+//              ; . . . .  - .        ,'                            //
+//             : . . . .       _     /                              //
+//            . . . . .          `-.:                               //
+//           . . . ./  - .          )                               //
+//          .  . . |  _____..---.._/ ____ dolphins.wtf ____         //
+//~---~~~~-~~---~~~~----~~~~-~~~~-~~---~~~~----~~~~~~---~~~~-~~---~~//
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
 
 contract snatchFeeder is Ownable {
     using SafeMath for uint256;
@@ -57,17 +75,21 @@ contract snatchFeeder is Ownable {
 
     function fundSnatch() public snatchingStarted cooledDown {
         require(_feedStock > 0, 'The funds have been fully snatched');
-        if(_feedStock >= _feedAmount) {
+        if(_feedStock > _feedAmount) {
             _eeee.fundSnatch(_feedAmount);
             _feedStock = _feedStock.sub(_feedAmount);
         } else {
+            // if the amount is below the normal feed level then send the remaining to the snatch pool and turn off snatching
             _eeee.fundSnatch(_feedStock);
             _feedStock = _feedStock.sub(_feedStock);
+            _snatchingStarted = false;
         }
+        _lastUpdated = now;
         emit FundSnatch(msg.sender, _feedStock);
     }
 
     function startSnatching() public onlyOwner {
+        require(_feedStock > 0, "You must deposit eeee before starting snatching");
         _snatchingStarted = true;
     }
 
