@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 
+// Eeee! Welcome Dolphins! 
+//
 //////////////////////////////////////////////////////////////////////
 //                                       __                         //
 //                                   _.-~  )    ____ eeee ____      //
@@ -27,7 +29,13 @@ import "@openzeppelin/contracts/math/Math.sol";
 //~---~~~~-~~---~~~~----~~~~-~~~~-~~---~~~~----~~~~~~---~~~~-~~---~~//
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
-
+//
+// This code has not been audited, but has been reviewed. Hopefully it's bug free... 
+// If you do find bugs, remember those were features and part of the game... Don't hate the player.
+//
+// Also, this token is a worthless game token. Don't buy it. Just farm it, and then play games. It will be fun. 
+//
+// Eeee! Let the games begin!
 
 // eeee, hardcap set on deployment with minting to dev for subsequent deployment into DolphinPods (2x) & snatchFeeder
 contract eeee is ERC20Capped, Ownable  {

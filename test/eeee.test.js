@@ -1,5 +1,4 @@
-/*
-const { expectRevert } = require('@openzeppelin/test-helpers');
+const { expectRevert, time } = require('@openzeppelin/test-helpers');
 const dolphinsWTF = artifacts.require('eeee');
 
 //const expectedSupply = web3.utils.toBN("42069000000000000000000");
@@ -366,7 +365,6 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
     it('only Peter can activate anarchy', async () => {
 
-        // this test requires commenting out the requirement for the game to be started.
         await this.eeee.transfer(bob, "1000", { from: alice });
 
         await this.eeee.fundDev(web3.utils.toBN('7000000000000000000'), { from: alice });
@@ -375,6 +373,9 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         assert.equal(checkSnatched.valueOf().toString(), '0');
         const checkDevFund = await this.eeee.checkDevBalance();
         assert.equal(checkDevFund.valueOf().toString(), '7000000000000000000');
+
+        await this.eeee.startGame({ from: alice });
+        await time.increase('3601');
 
         await expectRevert (
             this.eeee.activateAnarchy({ from: bob }),
@@ -393,11 +394,4 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
     });
 
-
-    //activateAnarchy
-    //changeFunctionFees
-
-
   });
-
-  */

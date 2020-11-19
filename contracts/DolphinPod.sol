@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
+
+// TODO - add a sweep function to withdraw any remaining eeee
+
 // Adapted from SushiSwap's MasterChef contract
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -77,7 +80,7 @@ contract DolphinPod is Ownable {
     // Farming of EEEE is enabled over a fixed number of blocks.
     // The start block is configurable until it has passed, at which point it cannot be changed.
     // When altering the start time the owner cannot start a farming sooner than 9200 blocks (~48 hours) in the future.
-    eeee public immutable dolphinToken;
+    IERC20  public immutable dolphinToken;
     uint256 public immutable eeeePerBlock; // Number of tokens minted per block, in phase1, accross all pools
     uint256 public immutable durationInBlocks; // E.g. ~46000 = one week
     uint256 public immutable minElapsedBlocksBeforeStart; // 
@@ -96,14 +99,14 @@ contract DolphinPod is Ownable {
         uint256 _startBlock);
 
     constructor (
-        eeee _eeee,
+        IERC20 eeee,
         uint256 _eeeePerBlock, // 5e17wei = 0.5 eeee per block
         uint256 _durationInBlocks,
         uint256 _minElapsedBlocksBeforeStart,
         uint256 _startBlock
     ) public
       validPhases {
-        dolphinToken = _eeee;
+        dolphinToken = eeee;
         require(_durationInBlocks > 0, "invalid duration");
         eeeePerBlock = _eeeePerBlock; // 5e17wei = 0.5 eeee per block
         durationInBlocks = _durationInBlocks;
@@ -228,9 +231,6 @@ contract DolphinPod is Ownable {
         // eeeeReward = (scaled block count) * (rewards per block) * (this pool's % share of all block rewards)
         uint256 eeeeReward = multiplier.mul(eeeePerBlock).mul(pool.allocPoint).div(totalAllocPoint);
 
-        // transfer 100% of eeeeReward to DolphinPod || TODO: Change to transfer from?
-        dolphinToken.transferFrom(msg.sender, address(this), eeeeReward);
-
         // Update the reward that each ERC20 / LP token in this pool is due (same for each ERC20 / LP token since last reward calc)
         pool.accEEEEPerShareTimes1e12 = pool.accEEEEPerShareTimes1e12.add(eeeeReward.mul(1e12).div(stakedSupply));
         pool.lastRewardBlock = block.number;
@@ -287,9 +287,16 @@ contract DolphinPod is Ownable {
     function safeEEEETransfer(address _to, uint256 _amount) internal {
         uint256 eeeeBal = dolphinToken.balanceOf(address(this));
         if (_amount > eeeeBal) {
-            dolphinToken.transfer(_to, eeeeBal);
+            dolphinToken.safeTransfer(_to, eeeeBal);
         } else {
-            dolphinToken.transfer(_to, _amount);
+            dolphinToken.safeTransfer(_to, _amount);
         }
+    }
+
+    // Allows dev to sweep any tokens left in the contract, but only after farming has completed
+     function cleanUpFarm() public onlyOwner {
+        uint256 farmingEndBlock = startBlock + durationInBlocks;  
+        require(block.number > farmingEndBlock, "farming hasn't finished yet");
+        safeEEEETransfer(msg.sender, dolphinToken.balanceOf(address(this)));
     }
 }
