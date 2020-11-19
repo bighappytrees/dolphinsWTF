@@ -903,12 +903,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x79c96f0B1ff35E75786981e58A2F9E756b57FeA6",
-      "transactionHash": "0x19c634e44ad77dce1dfdca3ea89806ecf096769a27066bf739373903657d7ae1"
+      "address": "0x808Be58CD617eE66beCDcA4660F084ed87c03814",
+      "transactionHash": "0x788215c88019e521e662ce4eb2396e70ec36522f3e1570c74457285bf84bf5c4"
     }
   },
   "schemaVersion": "3.3.2",
-  "updatedAt": "2020-11-17T19:44:27.367Z",
+  "updatedAt": "2020-11-19T16:17:29.142Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
