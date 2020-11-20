@@ -51,17 +51,17 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
     it('should turn game on, and revert on immediate call to stop game', async () => {
         await this.eeee.startGame({ from: alice });
-        const gameState = await this.eeee.readGameStatus();
+        const gameState = await this.eeee._isGameActive();
         assert.equal(gameState.valueOf(), true);
         await expectRevert(
-            this.eeee.endGame({ from: alice }),
+            this.eeee.pauseGame({ from: alice }),
             "Error: Revert or exceptional halt"
             );
     });
 
     it('should transfers properly with game on', async () => {
         await this.eeee.startGame({ from: alice });
-        const gameState = await this.eeee.readGameStatus();
+        const gameState = await this.eeee._isGameActive();
         assert.equal(gameState.valueOf(), true);
 
         const snatchBal = await this.eeee.checkSnatchBalance();
@@ -200,12 +200,12 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await expectRevert (
             this.eeee.changeSnatchRate(4, { from: ester }),
-            "Eeee! Minimum snatchRate is 1%, maximum is 3%. Flipper can use the changeSnatchRateHigh function.",
+            "Eeee! Minimum snatchRate is 1%, maximum 10% for Flipper",
         );
 
         await expectRevert (
             this.eeee.changeSnatchRate(0, { from: ester }),
-            "Eeee! Minimum snatchRate is 1%, maximum is 3%. Flipper can use the changeSnatchRateHigh function.",
+            "Eeee! Minimum snatchRate is 1%, maximum 10% for Flipper",
         );
 
         await expectRevert (
@@ -228,26 +228,26 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
 
         await expectRevert (
-            this.eeee.changeSnatchRateHigh(2, { from: ester }),
-            "You're not flipper",
-        );
-
-        await expectRevert (
-            this.eeee.changeSnatchRateHigh(11, { from: frank }),
+            this.eeee.changeSnatchRate(8, { from: ester }),
             "Eeee! Minimum snatchRate is 1%, maximum 10% for Flipper",
         );
 
         await expectRevert (
-            this.eeee.changeSnatchRateHigh(0, { from: frank }),
-            "Eeee! Minimum snatchRate is 1%, maximum 10% for Flipper",
+            this.eeee.changeSnatchRate(11, { from: frank }),
+            "Eeee! Minimum snatchRate is 1%, maximum is 10%.",
         );
 
         await expectRevert (
-            this.eeee.changeSnatchRateHigh(0.5, { from: frank }),
+            this.eeee.changeSnatchRate(0, { from: frank }),
+            "Eeee! Minimum snatchRate is 1%, maximum is 10%.",
+        );
+
+        await expectRevert (
+            this.eeee.changeSnatchRate(0.5, { from: frank }),
             'underflow',
         );
 
-        await this.eeee.changeSnatchRateHigh(9, { from: frank });
+        await this.eeee.changeSnatchRate(9, { from: frank });
 
     });
 
@@ -326,7 +326,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await expectRevert (
             this.eeee.updateRiver(web3.utils.toBN('2207000000000000000000'), { from: frank }),
-            "Maximum threshold for River Dolphins is 2103.45 EEEE",
+            "Threshold for River Dolphins must be 1 to 2103.45 EEEE)",
         );
 
         await this.eeee.updateRiver(web3.utils.toBN('420690000000000100000'), { from: frank });
@@ -354,7 +354,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await expectRevert (
             this.eeee.updateBottlenose(web3.utils.toBN('4207000000000000000000'), { from: frank }),
-            "Maximum threshold for River Dolphins is 4206.9 EEEE",
+            "Threshold for Bottlenose Dolphins must be 1 to 4206.9 EEEE",
         );
 
         await this.eeee.updateBottlenose(web3.utils.toBN('420690000000000100000'), { from: frank });

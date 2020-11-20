@@ -16,13 +16,13 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
         const started = await this.snatchFeeder._snatchingStarted();
         assert.equal(eeee.valueOf(), eeeeAddress);
         assert.equal(cooldown.valueOf(), 3600);
-        assert.equal(feed.valueOf().toString(), "690000000000000000" );
+        assert.equal(feed.valueOf().toString(), "42000000000000000000" );
         assert.equal(started.valueOf(), false);
     });
 
     it('check that funds can be deposited', async () => {
         const snatchAddress = await this.snatchFeeder.address;
-        const transferAmount = web3.utils.toBN('6900000000000000000');
+        const transferAmount = web3.utils.toBN('6969000000000000000000');
         await this.eeee.approve(snatchAddress, transferAmount, { from: alice });
         await this.snatchFeeder.deposit(transferAmount, { from: alice });
         const filledFeeder = await this.snatchFeeder._feedStock();
@@ -39,10 +39,10 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
 
         await expectRevert (
             this.snatchFeeder.startSnatching({ from: bob }),
-            "Ownable: caller is not the owner.",
+            "Error: Revert (message: Ownable: caller is not the owner)",
         );
 
-        const transferAmount = web3.utils.toBN('6900000000000000000');
+        const transferAmount = web3.utils.toBN('6969000000000000000000');
         await this.eeee.approve(snatchAddress, transferAmount, { from: alice });
         await this.snatchFeeder.deposit(transferAmount, { from: alice });
         await this.snatchFeeder.startSnatching({ from: alice });
@@ -56,7 +56,7 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
 
     it('check that snatching can only be done when snatching is started', async () => {
         const snatchAddress = await this.snatchFeeder.address;
-        const transferAmount = web3.utils.toBN('6900000000000000000');
+        const transferAmount = web3.utils.toBN('6969000000000000000000');
         await this.eeee.approve(snatchAddress, transferAmount, { from: alice });
         await this.snatchFeeder.deposit(transferAmount, { from: alice });
         
@@ -71,16 +71,17 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
         await this.snatchFeeder.fundSnatch({ from: bob });
 
         const snatchedFeeder = await this.snatchFeeder._feedStock();
-        assert.equal(snatchedFeeder.valueOf().toString(), "6210000000000000000");
+        //6969-42 = 6927
+        assert.equal(snatchedFeeder.valueOf().toString(), "6927000000000000000000");
 
         const snatchPool = await this.eeee._snatchPool();
-        assert.equal(snatchPool.valueOf().toString(), "690000000000000000");
+        assert.equal(snatchPool.valueOf().toString(), "42000000000000000000");
 
     });
     
     it('check that snatching can be done, but only when cooled down', async () => {
         const snatchAddress = await this.snatchFeeder.address;
-        const transferAmount = web3.utils.toBN('6900000000000000000');
+        const transferAmount = web3.utils.toBN('6969000000000000000000');
         await this.eeee.approve(snatchAddress, transferAmount, { from: alice });
         await this.snatchFeeder.deposit(transferAmount, { from: alice });
         await this.snatchFeeder.startSnatching({ from: alice });
@@ -89,10 +90,10 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
         await this.snatchFeeder.fundSnatch({ from: bob });
 
         const snatchedFeeder = await this.snatchFeeder._feedStock();
-        assert.equal(snatchedFeeder.valueOf().toString(), "6210000000000000000");
+        assert.equal(snatchedFeeder.valueOf().toString(), "6927000000000000000000");
 
         const snatchPool = await this.eeee._snatchPool();
-        assert.equal(snatchPool.valueOf().toString(), "690000000000000000");
+        assert.equal(snatchPool.valueOf().toString(), "42000000000000000000");
 
         await expectRevert (
             this.snatchFeeder.fundSnatch({ from: carol }),
@@ -103,7 +104,7 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
 
     it('check that snatching turns off automatically', async () => {
         const snatchAddress = await this.snatchFeeder.address;
-        const transferAmount = web3.utils.toBN('680000000000000000');
+        const transferAmount = web3.utils.toBN('41000000000000000000');
         await this.eeee.approve(snatchAddress, transferAmount, { from: alice });
         await this.snatchFeeder.deposit(transferAmount, { from: alice });
         await this.snatchFeeder.startSnatching({ from: alice });
@@ -115,7 +116,7 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
         assert.equal(snatchedFeeder.valueOf().toString(), "0");
 
         const snatchPool = await this.eeee._snatchPool();
-        assert.equal(snatchPool.valueOf().toString(), "680000000000000000");
+        assert.equal(snatchPool.valueOf().toString(), "41000000000000000000");
        
         const reSnatchStatus = await this.snatchFeeder._snatchingStarted();
         assert.equal(reSnatchStatus.valueOf(), false);

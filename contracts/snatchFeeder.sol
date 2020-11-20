@@ -51,7 +51,7 @@ contract snatchFeeder is Ownable {
     constructor (eeee dolphinToken) public {
         _eeee = dolphinToken;
         _coolDownTime = 1 hours;
-        _feedAmount = 69e16; //0.69 EEEE released per snatch
+        _feedAmount = 42e18; //42 EEEE released per snatch
         _snatchingStarted = false;
     }
 
@@ -75,15 +75,16 @@ contract snatchFeeder is Ownable {
 
     function fundSnatch() public snatchingStarted cooledDown {
         require(_feedStock > 0, 'The funds have been fully snatched');
-        if(_feedStock > _feedAmount) {
-            _eeee.fundSnatch(_feedAmount);
-            _feedStock = _feedStock.sub(_feedAmount);
-        } else {
-            // if the amount is below the normal feed level then send the remaining to the snatch pool and turn off snatching
-            _eeee.fundSnatch(_feedStock);
-            _feedStock = _feedStock.sub(_feedStock);
+        uint256 _feedToSnatch = _feedStock >= _feedAmount ? _feedAmount : _feedStock;
+
+        _eeee.fundSnatch(_feedToSnatch);
+        _feedStock = _feedStock.sub(_feedToSnatch);
+
+        if(_feedStock == 0) {
+            // if the last snatch amount took balance to zero then stop snatching
             _snatchingStarted = false;
         }
+        
         _lastUpdated = now;
         emit FundSnatch(msg.sender, _feedStock);
     }
