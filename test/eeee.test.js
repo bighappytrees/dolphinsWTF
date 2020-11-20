@@ -53,7 +53,10 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.startGame({ from: alice });
         const gameState = await this.eeee.readGameStatus();
         assert.equal(gameState.valueOf(), true);
-        await expectRevert.unspecified(this.eeee.endGame({ from: alice }));
+        await expectRevert(
+            this.eeee.endGame({ from: alice }),
+            "Error: Revert or exceptional halt"
+            );
     });
 
     it('should transfers properly with game on', async () => {
@@ -62,6 +65,8 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         assert.equal(gameState.valueOf(), true);
 
         const snatchBal = await this.eeee.checkSnatchBalance();
+        assert.equal(snatchBal.valueOf().toString(), 950000000000000000);
+        
         const transferAmount = web3.utils.toBN('1000000000000000000');
 
         await this.eeee.transfer(bob, transferAmount, { from: alice });
@@ -70,13 +75,11 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         const aliceBal = await this.eeee.balanceOf(alice);
         const bobBal = await this.eeee.balanceOf(bob);
 
-        // balanceOf doesn't return the appropriate value
-        assert.equal(aliceBal.valueOf().toString(), '42068000000000000000000');
+        assert.equal(aliceBal.valueOf().toString(), '42066990000000000000000');
         assert.equal(bobBal.valueOf().toString(), '1000000000000000000');
         assert.equal(snatchBalAgain.valueOf().toString(), 959500000000000000);
 
     });
-
 
     it('should fail if you try to do bad transfers', async () => {
         await this.eeee.transfer(carol, '1000', { from: alice});
@@ -121,7 +124,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
     });
 
-    it('check snatch, funding and priviliges', async () => {
+    it('check snatch, funding and privileges', async () => {
         const MockERC20 = artifacts.require('MockERC20');
         const mockToken = await MockERC20.new('test', 'test', 1000, { from: alice });
 
@@ -155,7 +158,6 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await this.eeee.fundSnatch(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: gina });
-
     });
 
     it('check that dev feeding can be activated and only called by the dev', async () => {
@@ -391,7 +393,5 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
             this.eeee.feedDev({ from: alice }),
             "You're not the dev, get out of here",
         );
-
     });
-
   });

@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Capped.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 
@@ -38,7 +38,7 @@ import "@openzeppelin/contracts/math/Math.sol";
 // Eeee! Let the games begin!
 
 // eeee, hardcap set on deployment with minting to dev for subsequent deployment into DolphinPods (2x) & snatchFeeder
-contract eeee is ERC20Capped, Ownable  {
+contract eeee is ERC20Capped, Ownable {
     using SafeMath for uint256;
 
     bool public _gameStarted;
@@ -60,7 +60,7 @@ contract eeee is ERC20Capped, Ownable  {
 	uint256 public _feeLevel1;
 	uint256 public _feeLevel2;
     
-    mapping(address => uint256) private _balances;
+    //mapping(address => uint256) private _balances;
 
     constructor() public
         ERC20("dolphins.wtf", "EEEE")
@@ -82,7 +82,7 @@ contract eeee is ERC20Capped, Ownable  {
 		_feeLevel2 = 5e18;
 		_owner = msg.sender;
         mint(msg.sender, 42069e18);
-        _balances[msg.sender] = 42069e18;
+        transfer(msg.sender, 42069e18);
     }
 
     // levels: checks caller's balance to determine if they can access a function
@@ -99,7 +99,7 @@ contract eeee is ERC20Capped, Ownable  {
     } 
 
     function amIOrca() public view returns(bool) {
-        bool orca = _balances[msg.sender] >= _orca ? true : false;
+        bool orca = balanceOf(msg.sender) >= _orca ? true : false;
         if (orca) {
             return orca;
         } else {
@@ -115,7 +115,7 @@ contract eeee is ERC20Capped, Ownable  {
     }
 
     function amIRiver() public view returns(bool) {
-        bool river = _balances[msg.sender] >= _river ? true : false;
+        bool river = balanceOf(msg.sender) >= _river ? true : false;
         return river;
     } 
 
@@ -126,7 +126,7 @@ contract eeee is ERC20Capped, Ownable  {
     }
 
     function amIBottlenose() public view returns(bool) {
-        bool bottlenose = _balances[msg.sender] >= _bottlenose ? true : false;
+        bool bottlenose = balanceOf(msg.sender) >= _bottlenose ? true : false;
         return bottlenose;
     } 
 
@@ -137,7 +137,7 @@ contract eeee is ERC20Capped, Ownable  {
     }
 
     function amIFlipper() public view returns(bool) {
-        bool flipper = _balances[msg.sender] >= _flipper ? true : false;
+        bool flipper = balanceOf(msg.sender) >= _flipper ? true : false;
         return flipper;
     } 
 
@@ -148,7 +148,7 @@ contract eeee is ERC20Capped, Ownable  {
     }
 
     function amIPeter() public view returns(bool) {
-        bool peter = _balances[msg.sender] >= _peter ? true : false;
+        bool peter = balanceOf(msg.sender) >= _peter ? true : false;
         return peter;
     } 
 
@@ -192,16 +192,28 @@ contract eeee is ERC20Capped, Ownable  {
         require(now > (_lastUpdated+_coolDownTime));
         _;
     }
+
+    // I need a function that moves both SnatchPool and the DevPool to the contract, and tracks that the balance of both is maintained
+    //uint256 public _snatchPool;
+    //uint256 public _devFoodBucket;
+
+
     
     // snatch - grab from snatch pool, requires min 0.01 EEEE in snatchpool -- always free
     function snatchFood() public onlyOrcas cooledDown {
         require(_snatchPool >= 1 * 1e16, "snatchpool: min snatch amount (0.01 EEEE) not reached.");
-		_balances[msg.sender] = _balances[msg.sender].add(_snatchPool);
+        // check that the balance left in the contract is not less than the amount in the snatchPool, in case of rounding errors
+        if (balanceOf(address(this)) < _snatchPool) {
+            this.transfer(msg.sender, balanceOf(address(this)));
+        } else {
+            this.transfer(msg.sender, _snatchPool);
+        }
         _snatchPool = 0;
     }
     
+    // Add directly to the snatchpool, if the caller is not the dev then set to cooldown
     function fundSnatch(uint256 EEEEtoSnatchPool) public {
-        _balances[msg.sender] = _balances[msg.sender].sub(EEEEtoSnatchPool);
+        transfer(address(this), EEEEtoSnatchPool);
         _snatchPool = _snatchPool.add(EEEEtoSnatchPool);
         if (address(msg.sender) != _owner) {
             _lastUpdated = now;
@@ -210,7 +222,7 @@ contract eeee is ERC20Capped, Ownable  {
     }
 
     function fundDev(uint256 EEEEtoDevFood) public {
-        _balances[msg.sender] = _balances[msg.sender].sub(EEEEtoDevFood);
+        transfer(address(this), EEEEtoDevFood);
         _devFoodBucket = _devFoodBucket.add(EEEEtoDevFood);
     }
 
@@ -225,17 +237,17 @@ contract eeee is ERC20Capped, Ownable  {
     // startGame -- call fee level 1
     function startGame() public onlyRiver cooledDown {
         require(!_gameStarted, "Eeee! The game has already started");
-        _balances[msg.sender] = _balances[msg.sender].sub(_feeLevel1);
-		_snatch(_feeLevel1);
-		_gameStarted = true;
+        transfer(address(this), _feeLevel1);
+        // because the game doesn't turn on until after this call completes we need to manually add to snatch
+        callsAlwaysPaySnatch(_feeLevel1);
+        _gameStarted = true;
         _lastUpdated = now;
     }
 
     // endGame -- call fee level 1
     function endGame() public onlyRiver cooledDown {
         require(_gameStarted, "Eeee! The game has already ended");
-		_balances[msg.sender] = _balances[msg.sender].sub(_feeLevel1);
-		_snatch(_feeLevel1);
+		transfer(address(this), _feeLevel1);
         _gameStarted = false;
         _lastUpdated = now;
     }
@@ -244,11 +256,18 @@ contract eeee is ERC20Capped, Ownable  {
         return _gameStarted;
     }
 
+    // all payed function calls should pay snatch, even if the game is off
+    function callsAlwaysPaySnatch (uint256 amount) internal {
+        if (!_gameStarted) {
+            _snatch(amount);
+        }
+    }
+
     // allowDevToEat - can only be turned on once  -- call fee level 1
     function allowDevToEat() public onlyBottlenose {
         require(!_devCanEat, "Eeee! Too late sucker, dev's eating tonight");
-		_balances[msg.sender] = _balances[msg.sender].sub(_feeLevel1);
-		_snatch(_feeLevel1);
+		transfer(address(this), _feeLevel1);
+        callsAlwaysPaySnatch(_feeLevel1);
         _devCanEat = true;
 		_lastUpdated = now;
     }
@@ -256,18 +275,18 @@ contract eeee is ERC20Capped, Ownable  {
     // changeSnatchRate - with max of 3% if Bottlenose; with max of 10% if Flipper -- call fee level 2
     function changeSnatchRate(uint256 newSnatchRate) public onlyBottlenose cooledDown {
         require(newSnatchRate >= 1 && newSnatchRate <= 3, "Eeee! Minimum snatchRate is 1%, maximum is 3%. Flipper can use the changeSnatchRateHigh function.");
-        _balances[msg.sender] = _balances[msg.sender].sub(_feeLevel2);
-		_snatch(_feeLevel2);
-		_snatchRate = newSnatchRate;
+        transfer(address(this), _feeLevel2);
+		callsAlwaysPaySnatch(_feeLevel2);
+        _snatchRate = newSnatchRate;
 		_lastUpdated = now;
     }
     
     // changeSnatchRate - with max of 10% if Flipper -- call fee level 2
     function changeSnatchRateHigh(uint256 newSnatchRate) public onlyFlipper cooledDown {
         require(newSnatchRate >= 1 && newSnatchRate <= 10, "Eeee! Minimum snatchRate is 1%, maximum 10% for Flipper");
-        _balances[msg.sender] = _balances[msg.sender].sub(_feeLevel2);
-		_snatch(_feeLevel2);
-		_snatchRate = newSnatchRate;
+        transfer(address(this), _feeLevel2);
+		callsAlwaysPaySnatch(_feeLevel2);
+        _snatchRate = newSnatchRate;
 		_lastUpdated = now;
     }
 
@@ -275,9 +294,9 @@ contract eeee is ERC20Capped, Ownable  {
     function updateCoolDown(uint256 newCoolDown) public onlyFlipper cooledDown {
         //require(_gameStarted, "Eeee! You need to wait for the game to start first");
         require(newCoolDown <= 24 && newCoolDown >= 1, "Eeee! Minimum cooldown is 1 hour, maximum is 24 hours");
-        _balances[msg.sender] = _balances[msg.sender].sub(_feeLevel2);
-		_snatch(_feeLevel2);
-		_coolDownTime = newCoolDown * 1 hours;
+        transfer(address(this), _feeLevel2);
+		callsAlwaysPaySnatch(_feeLevel2);
+        _coolDownTime = newCoolDown * 1 hours;
         _lastUpdated = now;
     }
 
@@ -290,50 +309,51 @@ contract eeee is ERC20Capped, Ownable  {
     function updateOrca(uint256 updatedThreshold) public onlyFlipper {
         uint256 changeFee;
         changeFee = changeSize(_orca, updatedThreshold);
-        require(_balances[msg.sender] >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
+        require(balanceOf(msg.sender) >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
 		require(updatedThreshold >= 1e18 && updatedThreshold <= 99e18, "Threshold for Orcas must be 1 to 99 EEEE");
         _orca = updatedThreshold;
-		_balances[msg.sender] = _balances[msg.sender].sub(changeFee);
-		_snatch(changeFee);
-		_lastUpdated = now;
+        transfer(address(this), changeFee);
+		callsAlwaysPaySnatch(changeFee);
+        _lastUpdated = now;
     }
     
     function updateRiver(uint256 updatedThreshold) public onlyFlipper {
         uint256 changeFee;
         changeFee = changeSize(_river, updatedThreshold);
-        require(_balances[msg.sender] >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
+        require(balanceOf(msg.sender) >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
 		require(updatedThreshold >= 1e18 && updatedThreshold <= 210345e16, "Maximum threshold for River Dolphins is 2103.45 EEEE");
         _river = updatedThreshold;
-		_balances[msg.sender] = _balances[msg.sender].sub(changeFee);
-		_snatch(changeFee);
-		_lastUpdated = now;
+		transfer(address(this), changeFee);
+		callsAlwaysPaySnatch(changeFee);
+        _lastUpdated = now;
     }
     
     function updateBottlenose(uint256 updatedThreshold) public onlyFlipper {
         uint256 changeFee;
         changeFee = changeSize(_bottlenose, updatedThreshold);
-        require(_balances[msg.sender] >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
+        require(balanceOf(msg.sender) >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
 		require(updatedThreshold >= 1e18 && updatedThreshold <= 42069e17, "Maximum threshold for River Dolphins is 4206.9 EEEE");
         _bottlenose = updatedThreshold;
-		_balances[msg.sender] = _balances[msg.sender].sub(changeFee);
-		_snatch(changeFee);
-		_lastUpdated = now;
+		transfer(address(this), changeFee);
+		callsAlwaysPaySnatch(changeFee);
+        _lastUpdated = now;
     }
 
     // dolphinAnarchy - transfer owner permissions to 0xNull & stops feeding dev. CAREFUL: this cannot be undone and once you do it the dolphins swim alone.  -- call fee level 2
     function activateAnarchy() public onlyPeter {
         //Return anything in dev pool to snatchpool
-        _balances[msg.sender] = _balances[msg.sender].sub(_feeLevel2);
-		_snatch(_feeLevel2);
-		_snatchPool = _snatchPool + _devFoodBucket;
+        transfer(address(this), _feeLevel2);
+		callsAlwaysPaySnatch(_feeLevel2);
+        _snatchPool = _snatchPool + _devFoodBucket;
         _devFoodBucket = 0;
         _isAnarchy = true; // ends dev feeding
         _owner = address(0);
     }
 
+
     // transfers tokens to snatchSupply and fees paid to dev (5%) only when we have not descended into Dolphin BASED anarchy
     function _snatch(uint256 amount) internal {
-        // check that the amount is at least 5e-18, otherwise throw it all in the snatchpool
+        // check that the amount is at least 5e-18 eeee, otherwise throw it all in the snatchpool
         if (amount >= 5) {
         uint256 devFood;
             devFood = _isAnarchy ? 0 : amount.mul(5).div(100); // 5% put in a food bucket for the contract creator if we've not descended into dolphin anarchy
@@ -345,34 +365,49 @@ contract eeee is ERC20Capped, Ownable  {
         }
     }
 
-    // transfer - with send to tax snatch pool
-    function _transfer(address sender, address recipient, uint256 amount) internal override {
-        super._transfer(sender, recipient, amount);
-
-        require(sender != address(0), "ERC20: transfer from the zero address");
-        require(recipient != address(0), "ERC20: transfer to the zero address");
- 
-        // check if sender has balance, then debit sender, execute _snatch, credit receipient
-        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
-        uint256 creditAmount;
+    function _calcSnatchAmount (uint256 amount) internal view returns (uint256) {
         if (_gameStarted) {
-            // calculate the taxed amount to be transfered if the game is active
-            uint256 snatchamount;
-            snatchamount = amount.mul(_snatchRate).div(100);
-            _snatch(snatchamount);
-            creditAmount = amount.sub(snatchamount);
+            // calculate the snatched amount to be transfered if the game is active
+            return (amount.mul(_snatchRate).div(100));
         } else {
-            creditAmount = amount;
+            return 0;
         }
-        
-        _balances[recipient] = _balances[recipient].add(creditAmount);
-        emit Transfer(sender, recipient, creditAmount);
+    }
+
+    // Need the _transfer function to break at _beforeTokenTransfer to do a second transfer to this contract for SnatchPool & DevFood, but if 
+    function _beforeTokenTransfer(address sender, address recipient, uint256 amount) internal override {
+        super._beforeTokenTransfer(sender, recipient, amount);
+
+        // This function should only do anything if the game is active, otherwise it should allow normal transfers
+        if (_gameStarted) {
+            // TO DO, make sure that transfers from Uniswap LP pool adhere to this
+            // Don't snatch transfers from the Uniswap LP pool (if set)
+            if (_UniLP != address(sender)) {
+                // A first call to _transfer (where the recipient isn't this contract will create a second transfer to this contract
+                if (recipient != address(this)) {
+                    //calculate snatchAmount
+                    uint256 amountToSnatch = _calcSnatchAmount(amount);
+                    // This function checks that the account sending funds has enough funds (transfer amount + snatch amount), otherwise reverts
+                    require(balanceOf(sender).sub(amount).sub(amountToSnatch) >= 0, "ERC20: transfer amount with snatch cost exceeds balance, send less");
+                    // allocate amountToSnatch to snatchPool and devFoodBucket
+                    _snatch(amountToSnatch);
+                    // make transfer from sender to this address
+                    _transfer(sender, address(this), amountToSnatch);
+                } 
+            }
+            // After this, the normal function continues, and makes amount transfer to intended recipient
+        }
     }
     
     // feedDev - allows owner to withdraw 5% thrown into dev food buck. Must only be called by the Dev.
     function feedDev() public onlyDev {
         require(_devCanEat, "sorry dev, no scraps for you");
-        _balances[msg.sender] = _balances[msg.sender].add(_devFoodBucket);
+        // check that the balance left in the contract is not less than the amount in the DevFoodBucket, in case of rounding errors
+        if (balanceOf(address(this)) < _devFoodBucket) {
+            transfer(msg.sender, balanceOf(address(this)));
+        } else {
+            transfer(msg.sender, _devFoodBucket);
+        }
         _devFoodBucket = 0;
     }
 	
