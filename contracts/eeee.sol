@@ -80,7 +80,7 @@ contract eeee is ERC20Capped, Ownable {
 		_feeLevel2 = 5e18;
 		_owner = msg.sender;
         mint(msg.sender, 42069e18);
-        transfer(msg.sender, 42069e18);
+        //transfer(msg.sender, 42069e18);
     }
 
     // levels: checks caller's balance to determine if they can access a function
@@ -293,7 +293,7 @@ contract eeee is ERC20Capped, Ownable {
         uint256 changeFee = getSizeChangeFee(_river, updatedThreshold);
         require(balanceOf(msg.sender) >= changeFee, "Eeee! You don't have enough EEEE to make this change.");
 		require(updatedThreshold >= 1e18 && updatedThreshold <= 210345e16, "Threshold for River Dolphins must be 1 to 2103.45 EEEE");
-        require(updatedThreshold > _river && updatedThreshold < _bottlenose, "Threshold for River Dolphins must great than River Dolphins *and* less than Bottlenose Dolphins");
+        require(updatedThreshold > _orca && updatedThreshold < _bottlenose, "Threshold for River Dolphins must great than River Dolphins *and* less than Bottlenose Dolphins");
         _river = updatedThreshold;
 		transfer(address(this), changeFee);
 		callsAlwaysPaySnatch(changeFee);

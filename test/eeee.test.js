@@ -53,10 +53,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.startGame({ from: alice });
         const gameState = await this.eeee._isGameActive();
         assert.equal(gameState.valueOf(), true);
-        await expectRevert(
-            this.eeee.pauseGame({ from: alice }),
-            "Error: Revert or exceptional halt"
-            );
+        await expectRevert.unspecified(this.eeee.pauseGame({ from: alice }));
     });
 
     it('should transfers properly with game on', async () => {
@@ -326,7 +323,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await expectRevert (
             this.eeee.updateRiver(web3.utils.toBN('2207000000000000000000'), { from: frank }),
-            "Threshold for River Dolphins must be 1 to 2103.45 EEEE)",
+            "Threshold for River Dolphins must be 1 to 2103.45 EEEE",
         );
 
         await this.eeee.updateRiver(web3.utils.toBN('420690000000000100000'), { from: frank });

@@ -1,4 +1,4 @@
-const { expectRevert } = require('@openzeppelin/test-helpers');
+const { expectRevert, time } = require('@openzeppelin/test-helpers');
 const dolphinsWTF = artifacts.require('eeee');
 const snatchFeeder = artifacts.require('snatchFeeder');
 
@@ -39,7 +39,7 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
 
         await expectRevert (
             this.snatchFeeder.startSnatching({ from: bob }),
-            "Error: Revert (message: Ownable: caller is not the owner)",
+            "Ownable: caller is not the owner",
         );
 
         const transferAmount = web3.utils.toBN('6969000000000000000000');
@@ -87,6 +87,8 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
         await this.snatchFeeder.startSnatching({ from: alice });
         const snatchStatus = await this.snatchFeeder._snatchingStarted();
         assert.equal(snatchStatus.valueOf(), true);
+        await time.increase(3600);
+
         await this.snatchFeeder.fundSnatch({ from: bob });
 
         const snatchedFeeder = await this.snatchFeeder._feedStock();
