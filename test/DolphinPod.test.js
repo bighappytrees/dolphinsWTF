@@ -95,6 +95,37 @@ contract('DolphinPod', ([alice, bob, carol, dev, minter]) => {
             assert.equal((await this.eeee.balanceOf(this.pod.address)).valueOf().toString(), '155');
         });
 
+        it('should allow withdrawals with the game has started', async () => {
+            // Transfer eeee to the contract  
+            await this.eeee.transfer(this.pod.address, transferAmount, { from: dev });
+            await this.pod.add('1', this.stakingToken.address, true, { from: dev });
+            await this.stakingToken.approve(this.pod.address, '1000', { from: bob });
+            await this.pod.deposit(0, '100', { from: bob });
+
+            assert.equal((await this.eeee.balanceOf(this.pod.address)).valueOf().toString(), '210');
+
+            await this.eeee.startGame({ from : dev}); 
+
+            await time.advanceBlockTo(startBlock - 5);
+            await this.pod.deposit(0, '0', { from: bob }); // 5 block before rewards start
+            assert.equal((await this.eeee.balanceOf(bob)).valueOf().toString(), '0');
+
+            await time.advanceBlockTo(startBlock - 1);
+            await this.pod.deposit(0, '0', { from: bob }); // 2 block before rewards start
+            assert.equal((await this.eeee.balanceOf(bob)).valueOf(), '0');
+
+            assert.equal((await this.eeee.balanceOf(this.pod.address)).valueOf().toString(), '210');
+            await this.pod.deposit(0, '0', { from: bob }); // block rewards start
+            assert.equal((await this.eeee.balanceOf(bob)).valueOf().toString(), '5');
+
+            await time.advanceBlockTo(startBlock + 10);
+            await this.pod.deposit(0, '0', { from: bob });
+            assert.equal((await web3.eth.getBlockNumber()).valueOf().toString(), (startBlock + 11).toString());
+            assert.equal((await this.eeee.balanceOf(bob)).valueOf().toString(), '55');
+            assert.equal((await this.eeee.balanceOf(this.pod.address)).valueOf().toString(), '155');
+
+        });
+
         it('should stop giving out eeees once farming has finished', async () => {
             // Transfer eeee to the contract  
             await this.eeee.transfer(this.pod.address, transferAmount, { from: dev });

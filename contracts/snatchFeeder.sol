@@ -39,8 +39,8 @@ contract snatchFeeder is Ownable {
     using SafeMath for uint256;
 
     eeee    public _eeee;
-    uint256 public _coolDownTime;
-    uint256 public _feedAmount;
+    uint256 public _coolDownTime = 1 hours;
+    uint256 public _feedAmount = 42e18; //42 EEEE released per snatch
     bool    public _snatchingStarted;
     uint256 public _feedStock;
     uint256 public _lastUpdated;
@@ -50,8 +50,6 @@ contract snatchFeeder is Ownable {
 
     constructor (eeee dolphinToken) public {
         _eeee = dolphinToken;
-        _coolDownTime = 1 hours;
-        _feedAmount = 42e18; //42 EEEE released per snatch
         _snatchingStarted = false;
     }
 

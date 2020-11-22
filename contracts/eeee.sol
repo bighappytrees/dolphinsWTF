@@ -80,7 +80,6 @@ contract eeee is ERC20Capped, Ownable {
 		_feeLevel2 = 5e18;
 		_owner = msg.sender;
         mint(msg.sender, 42069e18);
-        //transfer(msg.sender, 42069e18);
     }
 
     // levels: checks caller's balance to determine if they can access a function
