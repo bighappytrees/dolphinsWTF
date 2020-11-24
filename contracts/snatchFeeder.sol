@@ -40,7 +40,7 @@ contract snatchFeeder is Ownable {
 
     eeee    public _eeee;
     uint256 public _coolDownTime = 1 hours;
-    uint256 public _feedAmount = 42e18; //42 EEEE released per snatch
+    uint256 public _feedAmount = 21e18; //21 EEEE released per snatch
     bool    public _snatchingStarted;
     uint256 public _feedStock;
     uint256 public _lastUpdated;
@@ -75,7 +75,7 @@ contract snatchFeeder is Ownable {
         require(_feedStock > 0, 'The funds have been fully snatched');
         uint256 _feedToSnatch = _feedStock >= _feedAmount ? _feedAmount : _feedStock;
 
-        _eeee.fundSnatch(_feedToSnatch);
+        _eeee.depositToSnatchPool(_feedToSnatch);
         _feedStock = _feedStock.sub(_feedToSnatch);
 
         if(_feedStock == 0) {
@@ -88,6 +88,7 @@ contract snatchFeeder is Ownable {
     }
 
     function startSnatching() public onlyOwner {
+        _feedStock = _eeee.balanceOf(address(this));
         require(_feedStock > 0, "You must deposit eeee before starting snatching");
         _snatchingStarted = true;
     }

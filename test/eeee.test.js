@@ -134,26 +134,26 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
         await mockToken.transfer(gina, '51', { from: alice });
 
-        await this.eeee.fundSnatch(web3.utils.toBN('500000000000000001'), { from: alice });
+        await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: alice });
 
-        await this.eeee.fundSnatch(web3.utils.toBN('500000000000000001'), { from: alice });
+        await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await expectRevert( 
             this.eeee.snatchFood({ from: bob }),
             "Eeee! You're not even an orca",
         );
         await this.eeee.snatchFood({ from: carol });
 
-        await this.eeee.fundSnatch(web3.utils.toBN('500000000000000001'), { from: alice });
+        await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: dan });
 
-        await this.eeee.fundSnatch(web3.utils.toBN('500000000000000001'), { from: alice });
+        await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: ester });
 
-        await this.eeee.fundSnatch(web3.utils.toBN('500000000000000001'), { from: alice });
+        await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: frank });
 
-        await this.eeee.fundSnatch(web3.utils.toBN('500000000000000001'), { from: alice });
+        await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: gina });
     });
 
@@ -366,7 +366,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await this.eeee.transfer(bob, "1000", { from: alice });
 
-        await this.eeee.fundDev(web3.utils.toBN('7000000000000000000'), { from: alice });
+        await this.eeee.depositToDevFood(web3.utils.toBN('7000000000000000000'), { from: alice });
 
         const checkSnatched = await this.eeee.checkSnatchBalance();
         assert.equal(checkSnatched.valueOf().toString(), '0');

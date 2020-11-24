@@ -1,44 +1,76 @@
-const EEEE = artifacts.require("eeee");
-const EEEENotFarmed = artifacts.require("eeee");
-const DolphinPod1 = artifacts.require("DolphinPod");
-const DolphinPod2 = artifacts.require("DolphinPod");
-const snatchFeeder = artifacts.require("snatchFeeder");
-
+const EEEE = artifacts.require('eeee');
+const DolphinPod1 = artifacts.require('DolphinPod');
 
 const eeeeToFarm1 = web3.utils.toBN('21000000000000000000000');
-const eeeePerBlock1 = web3.utils.toBN('500000000000000000');
-const durationBlocks1 = web3.utils.toBN('42');
-const minElapsedBlocksBeforeStart1 = web3.utils.toBN('2');
+const eeeePerBlock1 = web3.utils.toBN('50000000000000000000');
+const durationBlocks1 = web3.utils.toBN('42000');
+const minElapsedBlocksBeforeStart1 = web3.utils.toBN('13200');
+
+const ethers = require('ethers');
+const { parseEther, formatEther, commify, keccak256, solidityPack, getAddress } = ethers.utils;
+
+// switch to mainnet before deployment
+const UniswapAddress = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"; 
+const wethAddress = "0xc778417e063141139fce010982780140aa0cd5ab";
+
+let TOKEN_WHITELIST_WEIGHTINGS = [
+    ['0x967da4048cD07aB37855c090aAF366e4ce1b9F48' , '10'],
+    ['0xf3348f43503D35cAD421864d941CD89Bc3A0b797' , '10'],
+    ['0x9d47894f8becb68b9cf3428d256311affe8b068b' , '10'],
+    ['0x26cf82e4ae43d31ea51e72b663d26e26a75af729' , '10'],
+    ['0x9b574599822642b04d0ff7e5776df3a06f4540ba' , '10'],
+    ['0x5ade7aE8660293F2ebfcEfaba91d141d72d221e8' , '1']
+];
+
+function getUniswapV2PairAddress(tokenA, tokenB) {
+    const [token0, token1] = tokenA < tokenB ? [tokenA, tokenB] : [tokenB, tokenA]
+    const create2Inputs = [
+      '0xff',
+      UniswapAddress, // UniswapV2Factory address (mainnet & rinkeby)
+      keccak256(solidityPack(['address', 'address'], [token0, token1])),
+      "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f" // Hash of UniswapV2Pair bytecode
+    ]
+    const sanitizedInputs = `0x${create2Inputs.map(i => i.slice(2)).join('')}`
+    return getAddress(`0x${keccak256(sanitizedInputs).slice(-40)}`)
+  }
 
 
-const eeeeToFarm2 = web3.utils.toBN('6969000000000000000000');
-const eeeePerBlock2 = web3.utils.toBN('500000000000000000');
-const durationBlocks2 = web3.utils.toBN('84');
-const minElapsedBlocksBeforeStart2 = web3.utils.toBN('2');
-
-
-const eeeeToSnatch = web3.utils.toBN('14100000000000000000000');
 
 module.exports = async (deployer) => {
-    await deployer.deploy(EEEENotFarmed);
-    
+
     await deployer.deploy(EEEE);
     eeeeInstance = await EEEE.deployed();
 
-    const startBlock1 = await web3.eth.getBlockNumber() + 10;
-    const offsetStart2 = (startBlock1 + durationBlocks1 + 10);
-    const startBlock2 = offsetStart2;
+    const UniswapV2WETHEEEEPairAddr = await getUniswapV2PairAddress(
+        eeeeInstance.address,
+        wethAddress); //WETH
+    
+    console.log("Uniswap EEEE Pair address (pair not created yet) will be: ", UniswapV2WETHEEEEPairAddr);
+    
+    const startBlock1 = await web3.eth.getBlockNumber() + 13500;
 
     await deployer.deploy(DolphinPod1, eeeeInstance.address, eeeePerBlock1, durationBlocks1, minElapsedBlocksBeforeStart1, startBlock1);
     pod1 = await DolphinPod1.deployed();
-    eeeeInstance.transfer(pod1.address, eeeeToFarm1);
-    
-    await deployer.deploy(DolphinPod2, eeeeInstance.address, eeeePerBlock2, durationBlocks2, minElapsedBlocksBeforeStart2, startBlock2);
-    pod2 = await DolphinPod2.deployed();
-    eeeeInstance.transfer(pod1.address, eeeeToFarm2);
 
-    await deployer.deploy(snatchFeeder, eeeeInstance.address);
-    snatchInstance = await snatchFeeder.deployed();
-    eeeeInstance.transfer(snatchInstance.address, eeeeToSnatch);
+    eeeeInstance.transfer(pod1.address, eeeeToFarm1);
+
+    eeeeInstance.setLP(UniswapV2WETHEEEEPairAddr, '10');
+
+    TOKEN_WHITELIST_WEIGHTINGS.splice(2,0, [UniswapV2WETHEEEEPairAddr, '69']);
+
+    console.log(TOKEN_WHITELIST_WEIGHTINGS);
+
+    let _addr;
+    let _weight;
+
+
+    for(let i = 0; i < TOKEN_WHITELIST_WEIGHTINGS.length; i++) {
+        let WHITELIST_ENTRY = TOKEN_WHITELIST_WEIGHTINGS[i];
+        _addr = WHITELIST_ENTRY[0];
+        _weight = WHITELIST_ENTRY[1];
+        await pod1.add(_weight, _addr, false);
+        console.log(` - ${_addr} (weight=${_weight})`);
+    }
+
 };
 

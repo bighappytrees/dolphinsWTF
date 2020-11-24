@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 
 // Eeee! Welcome Dolphins! 
+// Eeee! Welcome Dolphins! 
 //
 //////////////////////////////////////////////////////////////////////
 //                                       __                         //
@@ -192,7 +193,7 @@ contract eeee is ERC20Capped, Ownable {
     }
     
     // Add directly to the snatchpool, if the caller is not the dev then set to cooldown
-    function fundSnatch(uint256 EEEEtoSnatchPool) public {
+    function depositToSnatchPool(uint256 EEEEtoSnatchPool) public {
         transfer(address(this), EEEEtoSnatchPool);
         _snatchPool = _snatchPool.add(EEEEtoSnatchPool);
         if (address(msg.sender) != _owner) {
@@ -201,7 +202,7 @@ contract eeee is ERC20Capped, Ownable {
         
     }
 
-    function fundDev(uint256 EEEEtoDevFood) public {
+    function depositToDevFood(uint256 EEEEtoDevFood) public {
         transfer(address(this), EEEEtoDevFood);
         _devFoodBucket = _devFoodBucket.add(EEEEtoDevFood);
     }
@@ -263,7 +264,7 @@ contract eeee is ERC20Capped, Ownable {
 
     // changeCoolDownTime - make the game go faster or slower, cooldown to be set in hours (min 1; max 24) -- call fee level 2
     function updateCoolDown(uint256 newCoolDown) public onlyFlipper cooledDown {
-        //require(_isGameActive, "Eeee! You need to wait for the game to start first");
+        require(_isGameActive, "Eeee! You need to wait for the game to start first");
         require(newCoolDown <= 24 && newCoolDown >= 1, "Eeee! Minimum cooldown is 1 hour, maximum is 24 hours");
         transfer(address(this), _feeLevel2);
 		callsAlwaysPaySnatch(_feeLevel2);
