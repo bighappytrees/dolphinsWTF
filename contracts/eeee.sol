@@ -11,7 +11,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 
 // Eeee! Welcome Dolphins! 
-// Eeee! Welcome Dolphins! 
 //
 //////////////////////////////////////////////////////////////////////
 //                                       __                         //
