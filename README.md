@@ -57,23 +57,26 @@ Functions:
 * SetLP - Set the Uniswap LP address and minimum LP balance to be orca
 
 
+| Attempt | #1 | #2 |
+| :---: | :---: | :---: |
+| Seconds | 301 | 283 |
 
-                    | Snatch    | Start & Pause Game    | Allow Devs to Eat | Change Snatch Rate    |
-Orcas                   X
-River Dolphins          X         X                       
-Bottlenose Dolphins     X         X                        X                   X
-Flipper                 X         X                        X                   X
-Peter the Dolphin       X         X                        X                   X
-Dev/Owner
+|                    | Snatch   | Start & Pause Game    | Allow Devs to Eat | Change Snatch Rate    |
+|Orcas               |    X     |                       |                   |                       |
+|River Dolphin       |    X     |    X                  |                   |                       |     
+|Bottlenose Dolphin  |    X     |    X                  |   X               |   X                   |
+|Flipper             |    X     |    X                  |   X               |   X                   |
+|Peter the Dolphin   |    X     |    X                  |   X               |   X                   |
+|Dev/Owner           |          |                       |                   |                       |
 
 
-                    | Update Cooldown | Change Thresholds | Activate Anarchy | Feed Dev | Set Function Fees | SetLP
-Orcas                   
-River Dolphins                                 
-Bottlenose Dolphins     
-Flipper                 X               X                       
-Peter the Dolphin       X               X                   X
-Dev/Owner                                                                       X          X                    X
+|                  | Update Cooldown | Change Thresholds | Activate Anarchy | Feed Dev | Set Function Fee | SetLP | 
+|Orcas             |                 |                   |                  |          |                  |       |
+|River Dolphin     |                 |                   |                  |          |                  |       |
+|Bottlenose        |                 |                   |                  |          |                  |       |
+|Flipper           |     X           |    X              |                  |          |                  |       |
+|Peter the Dolphin |     X           |    X              |    X             |          |                  |       |
+|Dev/Owner         |                 |                   |                  |  X       |    X             |  X    |
 
 This repo also contains the code for Dolphin Pods, which distributes EEEE in two phases, as well as SnatchFeeder.
 
