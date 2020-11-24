@@ -17,7 +17,7 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
         const started = await this.snatchFeeder._snatchingStarted();
         assert.equal(eeee.valueOf(), eeeeAddress);
         assert.equal(cooldown.valueOf(), 3600);
-        assert.equal(feed.valueOf().toString(), "42000000000000000000" );
+        assert.equal(feed.valueOf().toString(), "21000000000000000000" );
         assert.equal(started.valueOf(), false);
     });
 
@@ -74,11 +74,11 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
 
         const snatchedFeeder = await this.snatchFeeder._feedStock();
         //6969-42 = 6927
-        assert.equal(snatchedFeeder.valueOf().toString(), "6927000000000000000000");
+        assert.equal(snatchedFeeder.valueOf().toString(), "6948000000000000000000");
 
         const reSnatchPool = await this.eeee._snatchPool();
         const snatched = (reSnatchPool.valueOf() - snatchPool.valueOf());
-        assert.equal(snatched.toString(), "42000000000000000000");
+        assert.equal(snatched.toString(), "21000000000000000000");
         //109155500000000000000'
 
     });
@@ -97,11 +97,11 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
         await this.snatchFeeder.fundSnatch({ from: bob });
 
         const snatchedFeeder = await this.snatchFeeder._feedStock();
-        assert.equal(snatchedFeeder.valueOf().toString(), "6927000000000000000000");
+        assert.equal(snatchedFeeder.valueOf().toString(), "6948000000000000000000");
 
         const reSnatchPool = await this.eeee._snatchPool();
         const snatched = reSnatchPool.valueOf() - snatchPool.valueOf();
-        assert.equal(snatched.toString(), "42000000000000000000");
+        assert.equal(snatched.toString(), "21000000000000000000");
 
         await expectRevert (
             this.snatchFeeder.fundSnatch({ from: carol }),
@@ -112,7 +112,7 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
 
     it('check that snatching turns off automatically', async () => {
         const snatchAddress = await this.snatchFeeder.address;
-        const transferAmount = web3.utils.toBN('40000000000000000000');
+        const transferAmount = web3.utils.toBN('10000000000000000000');
         await this.eeee.approve(snatchAddress, transferAmount, { from: alice });
         await this.snatchFeeder.deposit(transferAmount, { from: alice });
         await this.snatchFeeder.startSnatching({ from: alice });
@@ -124,7 +124,7 @@ contract('snatchFeeder', ([alice, bob, carol]) => {
         assert.equal(snatchedFeeder.valueOf().toString(), "0");
 
         const snatchPool = await this.eeee._snatchPool();
-        assert.equal(snatchPool.valueOf().toString(), "41330000000000000000");
+        assert.equal(snatchPool.valueOf().toString(), "11045000000000000000");
        
         const reSnatchStatus = await this.snatchFeeder._snatchingStarted();
         assert.equal(reSnatchStatus.valueOf(), false);

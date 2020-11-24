@@ -26,10 +26,15 @@ const web3 = new Web3();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 
 //const infuraKey = process.env["INFURA_PRIVATE_KEY"];
+const etherscanKey = process.env["ETHERSCAN_PRIVATE_KEY"];
+
 const infuraRinkebyLink = process.env["INFURA_RINKEY_ADDR"];
 const rinkebyMnemonic = process.env["RINKEBY_MNEMONIC"];
 const rinkebyAddress = process.env["RINKEBY_PUBLIC_ADDRESS"];
-const etherscanKey = process.env["ETHERSCAN_PRIVATE_KEY"];
+
+const infuraMainnetLink = process.env["INFURA_MAINNET_ADDR"];
+const mainnetMnemonic = process.env["MAINNET_MNEMONIC"];
+const mainnetAddress = process.env["MAINNET_PUBLIC_ADDRESS"];
 
 module.exports = {
   /**
@@ -53,20 +58,8 @@ module.exports = {
       host: "127.0.0.1",     // Localhost (default: none)
       port: 7545,            // Standard Ethereum port (default: none)
       network_id: "5777",       // Any network (default: none)
-      gasPrice: 20000000000,
+      gasPrice: 10e9,
      },
-
-    // Another network with more advanced options...
-    // advanced: {
-    // port: 8777,             // Custom port
-    // network_id: 1342,       // Custom network
-    // gas: 8500000,           // Gas sent with each transaction (default: ~6700000)
-    // gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
-    // from: <address>,        // Account to send txs from (default: accounts[0])
-    // websockets: true        // Enable EventEmitter interface for web3 (default: false)
-    // },
-    // Useful for deploying to a public network.
-    // NB: It's important to wrap the provider as a function.
 
     rinkeby: {
       provider: function() { 
@@ -75,16 +68,25 @@ module.exports = {
         from: rinkebyAddress,
       network_id: 4,       // Rinkeby's id
       gas: 5500000,        // Rinkeby has a lower block limit than mainnet
-      confirmations: 1,    // # of confs to wait between deployments. (default: 0)
+      gasPrice: 100e9,
+      confirmations: 0,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+      skipDryRun: false     // Skip dry run before migrations? (default: false for public nets )
     },
-    // Useful for private networks
-    // private: {
-    // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
-    // network_id: 2111,   // This network is yours, in the cloud.
-    // production: true    // Treats this network as if it was a public net. (default: false)
-    // }
+
+    mainnet: {
+      provider: function() { 
+        return new HDWalletProvider(mainnetMnemonic, infuraMainnetLink);
+      },
+        from: mainnetAddress,
+      network_id: 1,       // Mainnet's id
+      gas: 5500000,      
+      gasPrice: 100e9,
+      confirmations: 0,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 500,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: false     // Skip dry run before migrations? (default: false for public nets )
+    }
+
   },
 
   // Set default mocha options here, use special reporters etc.

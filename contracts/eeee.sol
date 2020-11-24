@@ -145,30 +145,6 @@ contract eeee is ERC20Capped, Ownable {
         _;
     }
 
-    function dolphinhoodLevel() public view returns(string memory) {
-        if (amIPeter()) {
-            return "Peter";
-        }
-        if (amIFlipper()) {
-            return "Flipper";
-        }
-        if (amIBottlenose()) {
-            return "Bottlenose";
-        }
-        if (amIRiver()) {
-            return "River";
-        }
-        if (amIOrca()) {
-            return "Orca";
-        }
-        if (amILP()) {
-            return "Orca";
-        } else {
-            return "notDolphin";
-        }
-
-    }
-
     // Are you the dev?
     modifier onlyDev() {
         require(address(msg.sender) == _owner, "You're not the dev, get out of here");
@@ -205,14 +181,6 @@ contract eeee is ERC20Capped, Ownable {
     function depositToDevFood(uint256 EEEEtoDevFood) public {
         transfer(address(this), EEEEtoDevFood);
         _devFoodBucket = _devFoodBucket.add(EEEEtoDevFood);
-    }
-
-    function checkSnatchBalance() public view returns (uint256) {
-        return _snatchPool;
-    }
-
-    function checkDevBalance() public view returns (uint256) {
-        return _devFoodBucket;
     }
 
     // startGame -- call fee level 1

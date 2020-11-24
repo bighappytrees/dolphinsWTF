@@ -61,14 +61,14 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         const gameState = await this.eeee._isGameActive();
         assert.equal(gameState.valueOf(), true);
 
-        const snatchBal = await this.eeee.checkSnatchBalance();
+        const snatchBal = await this.eeee._snatchPool();
         assert.equal(snatchBal.valueOf().toString(), 950000000000000000);
         
         const transferAmount = web3.utils.toBN('1000000000000000000');
 
         await this.eeee.transfer(bob, transferAmount, { from: alice });
 
-        const snatchBalAgain = await this.eeee.checkSnatchBalance();
+        const snatchBalAgain = await this.eeee._snatchPool();
         const aliceBal = await this.eeee.balanceOf(alice);
         const bobBal = await this.eeee.balanceOf(bob);
 
@@ -103,21 +103,21 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
         await mockToken.transfer(gina, '51', { from: alice });
 
-        const aliceLvl = await this.eeee.dolphinhoodLevel({ from: alice });
-        const bobLvl = await this.eeee.dolphinhoodLevel({ from: bob });
-        const carolLvl = await this.eeee.dolphinhoodLevel({ from: carol });
-        const danLvl = await this.eeee.dolphinhoodLevel({ from: dan });
-        const esterLvl = await this.eeee.dolphinhoodLevel({ from: ester });
-        const frankLvl = await this.eeee.dolphinhoodLevel({ from: frank });
-        const ginaLvl = await this.eeee.dolphinhoodLevel({ from: gina });
+        const aliceLvl = await this.eeee.amIPeter({ from: alice });
+        const bobLvl = await this.eeee.amIOrca({ from: bob });
+        const carolLvl = await this.eeee.amIOrca({ from: carol });
+        const danLvl = await this.eeee.amIRiver({ from: dan });
+        const esterLvl = await this.eeee.amIBottlenose({ from: ester });
+        const frankLvl = await this.eeee.amIFlipper({ from: frank });
+        const ginaLvl = await this.eeee.amIOrca({ from: gina });
 
-        assert.equal(aliceLvl, "Peter");
-        assert.equal(bobLvl, "notDolphin");
-        assert.equal(carolLvl, "Orca");
-        assert.equal(danLvl, "River");
-        assert.equal(esterLvl, "Bottlenose");
-        assert.equal(frankLvl, "Flipper");
-        assert.equal(ginaLvl, "Orca");
+        assert.equal(aliceLvl, true);
+        assert.equal(bobLvl, false);
+        assert.equal(carolLvl, true);
+        assert.equal(danLvl, true);
+        assert.equal(esterLvl, true);
+        assert.equal(frankLvl, true);
+        assert.equal(ginaLvl, true);
 
     });
 
@@ -134,8 +134,22 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
         await mockToken.transfer(gina, '51', { from: alice });
 
+        await this.eeee.startGame({ from: alice });
+        await time.increase('3601');
+
+        await this.eeee.transfer(alice, web3.utils.toBN('1000000000000000000'), { from: alice });
+
+        let checkSnatchPoolLvl;
+        let checkDevFundLvl;
+
         await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: alice });
+
+        checkSnatchPoolLvl = await this.eeee._snatchPool();
+        checkDevFundLvl = await this.eeee._devFoodBucket();
+        assert.equal(checkSnatchPoolLvl.valueOf().toString(), "0");
+        assert.equal(checkDevFundLvl.valueOf().toString(), "51229750000000000");
+
 
         await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await expectRevert( 
@@ -144,17 +158,45 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         );
         await this.eeee.snatchFood({ from: carol });
 
+        checkSnatchPoolLvl = await this.eeee._snatchPool();
+        checkDevFundLvl = await this.eeee._devFoodBucket();
+        assert.equal(checkSnatchPoolLvl.valueOf().toString(), "0");
+        assert.equal(checkDevFundLvl.valueOf().toString(), "51479750000000000");
+
         await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: dan });
+
+        checkSnatchPoolLvl = await this.eeee._snatchPool();
+        checkDevFundLvl = await this.eeee._devFoodBucket();
+        assert.equal(checkSnatchPoolLvl.valueOf().toString(), "0");
+        assert.equal(checkDevFundLvl.valueOf().toString(), "51729750000000000");
 
         await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: ester });
 
+        checkSnatchPoolLvl = await this.eeee._snatchPool();
+        checkDevFundLvl = await this.eeee._devFoodBucket();
+        assert.equal(checkSnatchPoolLvl.valueOf().toString(), "0");
+        assert.equal(checkDevFundLvl.valueOf().toString(), "51979750000000000");
+
         await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: frank });
 
+        checkSnatchPoolLvl = await this.eeee._snatchPool();
+        checkDevFundLvl = await this.eeee._devFoodBucket();
+        assert.equal(checkSnatchPoolLvl.valueOf().toString(), "0");
+        assert.equal(checkDevFundLvl.valueOf().toString(), "52229750000000000");
+
+
+        await this.eeee.transfer(alice, web3.utils.toBN('1000000000000000000'), { from: alice });
+
         await this.eeee.depositToSnatchPool(web3.utils.toBN('500000000000000001'), { from: alice });
         await this.eeee.snatchFood({ from: gina });
+
+        checkSnatchPoolLvl = await this.eeee._snatchPool();
+        checkDevFundLvl = await this.eeee._devFoodBucket();
+        assert.equal(checkSnatchPoolLvl.valueOf().toString(), "0");
+        assert.equal(checkDevFundLvl.valueOf().toString(), "52984500000000000");
     });
 
     it('check that dev feeding can be activated and only called by the dev', async () => {
@@ -254,6 +296,10 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.transfer(bob, "1000", { from: alice });
         await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
 
+        await this.eeee.startGame({ from: alice });
+        await time.increase('3601');
+
+
         await expectRevert (
             this.eeee.updateCoolDown(2, { from: bob }),
             "You're not flipper",
@@ -284,7 +330,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.transfer(bob, "1000", { from: alice });
         await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
 
-        const checkSnatched = await this.eeee.checkSnatchBalance();
+        const checkSnatched = await this.eeee._snatchPool();
 
         assert.equal(checkSnatched.valueOf().toString(), '0');
 
@@ -300,7 +346,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await this.eeee.updateOrca(web3.utils.toBN('68000000000000000000'), { from: frank });
 
-        const reCheckSnatched = await this.eeee.checkSnatchBalance();
+        const reCheckSnatched = await this.eeee._snatchPool();
 
         assert.equal(reCheckSnatched.valueOf().toString(), '950000000000000000');
 
@@ -312,7 +358,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.transfer(bob, "1000", { from: alice });
         await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
 
-        const checkSnatched = await this.eeee.checkSnatchBalance();
+        const checkSnatched = await this.eeee._snatchPool();
 
         assert.equal(checkSnatched.valueOf().toString(), '0');
 
@@ -328,7 +374,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await this.eeee.updateRiver(web3.utils.toBN('420690000000000100000'), { from: frank });
 
-        const reCheckSnatched = await this.eeee.checkSnatchBalance();
+        const reCheckSnatched = await this.eeee._snatchPool();
 
         assert.equal(reCheckSnatched.valueOf().toString(), '95000');
 
@@ -340,7 +386,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
         await this.eeee.transfer(bob, "1000", { from: alice });
         await this.eeee.transfer(frank, web3.utils.toBN('4400000000000000000001'), { from: alice });
 
-        const checkSnatched = await this.eeee.checkSnatchBalance();
+        const checkSnatched = await this.eeee._snatchPool();
 
         assert.equal(checkSnatched.valueOf().toString(), '0');
 
@@ -356,7 +402,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await this.eeee.updateBottlenose(web3.utils.toBN('420690000000000100000'), { from: frank });
 
-        const reCheckSnatched = await this.eeee.checkSnatchBalance();
+        const reCheckSnatched = await this.eeee._snatchPool();
 
         assert.equal(reCheckSnatched.valueOf().toString(), '1598621999999999905000');
 
@@ -368,9 +414,9 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await this.eeee.depositToDevFood(web3.utils.toBN('7000000000000000000'), { from: alice });
 
-        const checkSnatched = await this.eeee.checkSnatchBalance();
+        const checkSnatched = await this.eeee._snatchPool();
         assert.equal(checkSnatched.valueOf().toString(), '0');
-        const checkDevFund = await this.eeee.checkDevBalance();
+        const checkDevFund = await this.eeee._devFoodBucket();
         assert.equal(checkDevFund.valueOf().toString(), '7000000000000000000');
 
         await this.eeee.startGame({ from: alice });
@@ -383,7 +429,7 @@ contract('dolphinsWTF', ([alice, bob, carol, dan, ester, frank, gina]) => {
 
         await this.eeee.activateAnarchy({ from: alice });
 
-        const reCheckDevFund = await this.eeee.checkDevBalance();
+        const reCheckDevFund = await this.eeee._devFoodBucket();
         assert.equal(reCheckDevFund.valueOf().toString(), '0');
 
         await expectRevert (

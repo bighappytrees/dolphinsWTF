@@ -7,11 +7,12 @@ const durationBlocks1 = web3.utils.toBN('42000');
 const minElapsedBlocksBeforeStart1 = web3.utils.toBN('13200');
 
 const ethers = require('ethers');
-const { parseEther, formatEther, commify, keccak256, solidityPack, getAddress } = ethers.utils;
+const { keccak256, solidityPack, getAddress } = ethers.utils;
 
 // switch to mainnet before deployment
+const mainnet = false;
 const UniswapAddress = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"; 
-const wethAddress = "0xc778417e063141139fce010982780140aa0cd5ab";
+const wethAddress = mainnet ? "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" : "0xc778417e063141139fce010982780140aa0cd5ab";
 
 let TOKEN_WHITELIST_WEIGHTINGS = [
     ['0x967da4048cD07aB37855c090aAF366e4ce1b9F48' , '10'],
