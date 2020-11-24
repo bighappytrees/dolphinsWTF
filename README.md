@@ -65,7 +65,6 @@ Functions:
 | Flipper            |    X   |         X        |         X         |          X         |        X        |         X         |                  |          |                   |        |
 | Peter the Dolphin  |    X   |         X        |         X         |          X         |        X        |         X         |         X        |          |                   |        |
 | Dev/Owner          |        |                  |                   |                    |                 |                   |                  |     X    |         X         |    X   |
-|--------------------|--------|------------------|-------------------|--------------------|-----------------|-------------------|------------------|----------|-------------------|--------|
 
 This repo also contains the code for Dolphin Pods, which distributes EEEE in two phases, as well as SnatchFeeder.
 
